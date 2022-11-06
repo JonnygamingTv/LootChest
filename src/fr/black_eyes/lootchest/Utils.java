@@ -68,7 +68,7 @@ public class Utils  {
 	
 	private void sendMultilineMessage(String message, CommandSender player) {
 		List<String> msgs = Arrays.asList(message.split("\\\\n"));
-		msgs.stream().forEach(msg -> player.sendMessage(msg.replace("&", "�")));
+		msgs.stream().forEach(msg -> player.sendMessage(msg.replace("&", "§")));
 	}
 	
 	public String getMsg(String path, String replacer, String replacement) {
@@ -95,7 +95,7 @@ public class Utils  {
 	
 
 	
-	//cr�er le coffe et enregistrer les infos
+	//cr§er le coffe et enregistrer les infos
 	//chest creation and registering
 
 	
@@ -235,7 +235,7 @@ public class Utils  {
 		return center;
 	}
 	
-	//se sert du config.getData().yml pour set le coffre et remplir son inventaire, cr�er l'holo en fonction du nom 
+	//se sert du config.getData().yml pour set le coffre et remplir son inventaire, cr§er l'holo en fonction du nom 
 	//Taking informations from config.getData().yml to restore a specific chest if it is time to do it, or if we force respawn. 
 	public boolean restoreChest(Lootchest lc, Boolean force) {
 		if(!Main.getInstance().getLootChest().containsValue(lc)) {
@@ -247,7 +247,7 @@ public class Utils  {
 		//Main.getInstance().getLogger().info("respawn function of "+ name + " (1)");
 
 		if(Bukkit.getWorld(lc.getWorld()) == null) {
-			Bukkit.getLogger().info("�cThe world " + lc.getWorld() + " is not loaded, can't respawn chest " + lc.getName());
+			Bukkit.getLogger().info("§cThe world " + lc.getWorld() + " is not loaded, can't respawn chest " + lc.getName());
 			return false;
 		}
 		
@@ -286,7 +286,7 @@ public class Utils  {
 					counter++;
 				}
 				if(counter == 50) {
-					Bukkit.getLogger().info("�cThe chest " + lc.getName() + " didn't found an unprotected location, so that it can't respawn! " );
+					Bukkit.getLogger().info("§cThe chest " + lc.getName() + " didn't found an unprotected location, so that it can't respawn! " );
 					long tempsactuel = (new Timestamp(System.currentTimeMillis())).getTime();
 					lc.setLastreset(tempsactuel);
 					sheduleRespawn(lc);
@@ -338,19 +338,19 @@ public class Utils  {
 			//Bukkit.getLogger().info("respawn function of "+ lc.name + " force:" + force+" lc.respawn_natural:"+ lc.respawn_natural + " num <= players:"+(num <= players) );
 			
 			if(!force && lc.getRespawn_natural() && num <= players ) {
-				//Bukkit.getLogger().info("entrée if message");
+				//Bukkit.getLogger().info("entrÃ©e if message");
 				String holo = lc.getHolo();
 				if(Main.configs.NOTE_bungee_broadcast) {
-					BungeeChannel.bungeeBroadcast((((Main.configs.NOTE_natural_msg.replace("[Chest]", holo)).replace("[x]", newloc.getX()+"")).replace("[y]", newloc.getY()+"")).replace("[z]", newloc.getZ()+"").replace("&", "�"));
+					BungeeChannel.bungeeBroadcast((((Main.configs.NOTE_natural_msg.replace("[Chest]", holo)).replace("[x]", newloc.getX()+"")).replace("[y]", newloc.getY()+"")).replace("[z]", newloc.getZ()+"").replace("&", "§"));
 				}
 				else if(!Main.configs.NOTE_per_world_message) {
-					//Bukkit.getLogger().info("per world msg désactivé, envoie");
+					//Bukkit.getLogger().info("per world msg dÃ©sactivÃ©, envoie");
 					for(Player p : Bukkit.getOnlinePlayers()) {
 						msg(p, Main.configs.NOTE_natural_msg,"[World]", newloc.getWorld().getName(), "[Chest]", holo, "[x]", newloc.getX()+"", "[y]", newloc.getY()+"", "[z]", newloc.getZ()+"");
 					}
 						
 				}else {
-					//Bukkit.getLogger().info("per world msg activé, envoie");
+					//Bukkit.getLogger().info("per world msg activÃ©, envoie");
 					for(Player p : loc.getWorld().getPlayers()){
 						msg(p, Main.configs.NOTE_natural_msg, "[World]", newloc.getWorld().getName(), "[Chest]", holo, "[x]", newloc.getX()+"", "[y]", newloc.getY()+"", "[z]", newloc.getZ()+"");
 					}
@@ -512,7 +512,7 @@ public class Utils  {
 	//geting chest position from config.getData().yml
 	public  Location getPosition(String name) {
 		if (configFiles.getData().getString("chests." + name + ".position.world") == null) {
-			main.getLogger().info("�cThe plugin couldn't get the world of chest �6" + name +"�c. This won't prevent the plugin to work, but the plugin may throw other errors because of that.");
+			main.getLogger().info("§cThe plugin couldn't get the world of chest §6" + name +"§c. This won't prevent the plugin to work, but the plugin may throw other errors because of that.");
 			return null;
 		}
 		World world = Bukkit.getWorld(configFiles.getData().getString("chests." + name + ".position.world"));
@@ -561,37 +561,42 @@ public class Utils  {
 	}
 	
 	public int killOldHolograms(boolean all) {
-		int cpt = 0;
-		List<String> holograms = new ArrayList<String>();
-		Main.getInstance().getLootChest().values().forEach(lc -> {
-			lc.getActualLocation().getWorld().loadChunk(lc.getActualLocation().getChunk());
-			holograms.add(lc.getHolo().replace("&", "�"));
+		Bukkit.getScheduler().runTaskAsynchronously(Bukkit.getServer().getPluginManager().getPlugin("GM"), (Runnable)new Runnable() {
+    		 @Override
+    		 public void run() {
+			 int cpt = 0;
+			 List<String> holograms = new ArrayList<String>();
+			 Main.getInstance().getLootChest().values().forEach(lc -> {
+				 lc.getActualLocation().getWorld().loadChunk(lc.getActualLocation().getChunk());
+				 holograms.add(lc.getHolo().replace("&", "§"));
+			 });
+			 for(World world : Bukkit.getWorlds()) {
+				 for(Entity ent : world.getEntities()) {
+					 if(ent instanceof org.bukkit.entity.ArmorStand) {
+						 //remove is set to true if the entity name contains hologram text
+						 boolean remove = false;
+						 for(String holo:holograms) {
+							 if(ent.getCustomName() != null && holo !=null && ent.getCustomName().contains(holo)) {
+								 remove = true;
+								 break;
+							 }
+						 }
+						 Location loc = ent.getLocation();
+						 loc = loc.subtract(0, Main.configs.Hologram_distance_to_chest, 0);
+						 //if the block under holo is a chest or if we want to remove all holo (at startup)
+						 if((!Mat.isALootChestBlock(loc.getBlock()) || all) &&remove) {
+							 ent.remove();
+							 cpt++;
+						 }
+					 }
+				 }
+			 }
+			 if(all) {
+				 main.logInfo("Removed "+cpt+" holograms");
+			 }
+			 return cpt;
+		 }
 		});
-		for(World world : Bukkit.getWorlds()) {
-			for(Entity ent : world.getEntities()) {
-				if(ent instanceof org.bukkit.entity.ArmorStand) {
-					//remove is set to true if the entity name contains hologram text
-					boolean remove = false;
-					for(String holo:holograms) {
-						if(ent.getCustomName() != null && holo !=null && ent.getCustomName().contains(holo)) {
-							remove = true;
-							break;
-						}
-					}
-					Location loc = ent.getLocation();
-					loc = loc.subtract(0, Main.configs.Hologram_distance_to_chest, 0);
-					//if the block under holo is a chest or if we want to remove all holo (at startup)
-					if((!Mat.isALootChestBlock(loc.getBlock()) || all) &&remove) {
-						ent.remove();
-						cpt++;
-					}
-				}
-			}
-		}
-		if(all) {
-			main.logInfo("Removed "+cpt+" holograms");
-		}
-		return cpt;
 	}
 	
 	public  Location getRandomPosition(String name) {
